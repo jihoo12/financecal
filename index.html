@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>적립식 복리 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=DM+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="glow-orb one"></div>
+<div class="glow-orb two"></div>
+
+<div class="page-wrap">
+
+  <header class="animate">
+    <div class="header-left">
+      <div class="tag">복리 계산기</div>
+      <h1>적립식 <span>복리</span> 계산기</h1>
+      <p class="subtitle">매월 정기 납입금과 복리 수익률로 미래 자산을 시뮬레이션하세요</p>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- ── 왼쪽: 입력 패널 ── -->
+    <div class="panel animate" style="animation-delay:0.1s">
+      <div class="panel-title">투자 설정</div>
+
+      <div class="input-group">
+        <div class="input-label">초기 투자금 <span id="lbl-initial">₩1,000,000</span></div>
+        <div class="input-row">
+          <div class="prefix">₩</div>
+          <input type="number" id="initial" value="1000000" min="0" step="100000">
+        </div>
+        <div class="range-wrap">
+          <input type="range" id="r-initial" min="0" max="50000000" step="500000" value="1000000">
+          <div class="range-labels"><span>₩0</span><span>₩5천만</span></div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">월 적립금 <span id="lbl-monthly">₩300,000</span></div>
+        <div class="input-row">
+          <div class="prefix">₩</div>
+          <input type="number" id="monthly" value="300000" min="0" step="10000">
+        </div>
+        <div class="range-wrap">
+          <input type="range" id="r-monthly" min="0" max="5000000" step="50000" value="300000">
+          <div class="range-labels"><span>₩0</span><span>₩500만</span></div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">연간 수익률 <span id="lbl-rate">7.0%</span></div>
+        <input type="number" id="rate" value="7" min="0.1" max="50" step="0.1">
+        <div class="range-wrap">
+          <input type="range" id="r-rate" min="0.1" max="30" step="0.1" value="7">
+          <div class="range-labels"><span>0.1%</span><span>30%</span></div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">투자 기간 <span id="lbl-years">20년</span></div>
+        <input type="number" id="years" value="20" min="1" max="50" step="1">
+        <div class="range-wrap">
+          <input type="range" id="r-years" min="1" max="50" step="1" value="20">
+          <div class="range-labels"><span>1년</span><span>50년</span></div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label">복리 주기</div>
+        <select id="compound">
+          <option value="1">연간 복리 (1회/년)</option>
+          <option value="2">반기 복리 (2회/년)</option>
+          <option value="4">분기 복리 (4회/년)</option>
+          <option value="12" selected>월 복리 (12회/년)</option>
+          <option value="365">일 복리 (365회/년)</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- ── 오른쪽: 결과 영역 ── -->
+    <div class="right-col">
+
+      <div class="result-grid">
+        <div class="result-card main animate" style="animation-delay:0.15s">
+          <div class="result-label">최종 자산</div>
+          <div class="result-value number-animate" id="r-total">₩0</div>
+          <div class="result-sub pos" id="r-return">수익률 +0%</div>
+        </div>
+        <div class="result-card invested animate" style="animation-delay:0.2s">
+          <div class="result-label">총 납입금</div>
+          <div class="result-value number-animate" id="r-invested">₩0</div>
+          <div class="result-sub" id="r-invested-sub"></div>
+        </div>
+        <div class="result-card interest animate" style="animation-delay:0.25s">
+          <div class="result-label">총 수익금</div>
+          <div class="result-value number-animate" id="r-interest">₩0</div>
+          <div class="result-sub" id="r-interest-pct"></div>
+        </div>
+      </div>
+
+      <div class="chart-panel animate" style="animation-delay:0.3s">
+        <div class="chart-header">
+          <div class="chart-title">연도별 자산 성장 그래프</div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#4ecdc4"></div>
+              납입 원금
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#d4a84b"></div>
+              복리 수익
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="growthChart" role="img" aria-label="연도별 투자 원금과 복리 수익 누적 그래프"></canvas>
+        </div>
+      </div>
+
+      <div class="table-panel animate" style="animation-delay:0.35s">
+        <div class="table-header">
+          <span>연도별 상세 내역</span>
+        </div>
+        <!-- 데스크톱 테이블 -->
+        <div class="table-wrap desktop-table">
+          <table>
+            <thead>
+              <tr>
+                <th>연도</th>
+                <th>연말 자산</th>
+                <th>총 납입금</th>
+                <th>총 수익금</th>
+                <th>수익률</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <!-- 모바일 카드 목록 -->
+        <div class="mobile-cards" id="mobile-cards"></div>
+
+        <button class="show-all-btn" id="toggle-btn" onclick="toggleTable()">
+          전체 내역 보기
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+            <path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    본 계산기는 참고용이며 실제 투자 결과와 다를 수 있습니다.
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
