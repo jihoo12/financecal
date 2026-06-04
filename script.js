@@ -30,13 +30,19 @@ function calc() {
   const rn   = r / n;
   const data = [];
 
+  // 월 납입 기준으로 월 이자율 환산
+  // 복리 주기 n으로 연이율 r이 적용될 때, 실질 월 이자율 계산
+  const monthlyRate = Math.pow(1 + rn, n / 12) - 1;
+
   for (let y = 1; y <= yrs; y++) {
     const months    = y * 12;
     const periods   = y * n;
     const principal = P + pmt * months;
+    // 초기 투자금의 미래가치
     let total = P * Math.pow(1 + rn, periods);
-    if (rn > 0) {
-      total += pmt * (Math.pow(1 + rn, periods) - 1) / rn * (n / 12);
+    // 월 적립금의 미래가치 (등비급수 공식)
+    if (monthlyRate > 0) {
+      total += pmt * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate;
     } else {
       total += pmt * months;
     }
